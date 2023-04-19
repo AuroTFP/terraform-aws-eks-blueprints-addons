@@ -46,6 +46,40 @@ variable "eks_addons_timeouts" {
 }
 
 ################################################################################
+# AWS Node Termination Handler
+################################################################################
+
+variable "enable_aws_node_termination_handler" {
+  description = "Enable AWS Node Termination Handler add-on"
+  type        = bool
+  default     = false
+}
+
+variable "enable_aws_node_termination_handler_gitops" {
+  description = "Enable AWS Node Termination Handler using GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "aws_node_termination_handler" {
+  description = "AWS Node Termination Handler addon configuration values"
+  type        = any
+  default     = {}
+}
+
+variable "aws_node_termination_handler_sqs" {
+  description = "AWS Node Termination Handler SQS queue configuration values"
+  type        = any
+  default     = {}
+}
+
+variable "aws_node_termination_handler_asg_arns" {
+  description = "List of Auto Scaling group ARNs that AWS Node Termination Handler will monitor for EC2 events"
+  type        = list(string)
+  default     = []
+}
+
+################################################################################
 # ArgoCD
 ################################################################################
 
@@ -124,6 +158,56 @@ variable "argo_rollouts" {
 }
 
 ################################################################################
+# Cert Manager
+################################################################################
+
+variable "enable_cert_manager" {
+  description = "Enable cert-manager add-on"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cert_manager_gitops" {
+  description = "Enable cert-manager using GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "cert_manager" {
+  description = "cert-manager addon configuration values"
+  type        = any
+  default     = {}
+}
+
+variable "cert_manager_route53_hosted_zone_arns" {
+  description = "List of Route53 Hosted Zone ARNs that are used by cert-manager to create DNS records"
+  type        = list(string)
+  default     = ["arn:aws:route53:::hostedzone/*"]
+}
+
+################################################################################
+# Cluster Autoscaler
+################################################################################
+
+variable "enable_cluster_autoscaler" {
+  description = "Enable Cluster autoscaler add-on"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cluster_autoscaler_gitops" {
+  description = "Enable Cluster Autoscaler using GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "cluster_autoscaler" {
+  description = "Cluster Autoscaler addon configuration values"
+  type        = any
+  default     = {}
+}
+
+################################################################################
 # Cloudwatch Metrics
 ################################################################################
 
@@ -146,7 +230,7 @@ variable "cloudwatch_metrics" {
 }
 
 ################################################################################
-# Cloudwatch Metrics
+# External Secrets
 ################################################################################
 
 variable "enable_external_secrets" {
@@ -179,122 +263,258 @@ variable "external_secrets_kms_key_arns" {
   default     = ["arn:aws:kms:*:*:key/*"]
 }
 
+################################################################################
+# External DNS
+################################################################################
 
-
-variable "auto_scaling_group_names" {
-  description = "List of self-managed node groups autoscaling group names"
-  type        = list(string)
-  default     = []
-}
-
-variable "irsa_iam_role_path" {
-  description = "IAM role path for IRSA roles"
-  type        = string
-  default     = "/"
-}
-
-variable "irsa_iam_permissions_boundary" {
-  description = "IAM permissions boundary for IRSA roles"
-  type        = string
-  default     = ""
-}
-
-variable "custom_image_registry_uri" {
-  description = "Custom image registry URI map of `{region = dkr.endpoint }`"
-  type        = map(string)
-  default     = {}
-}
-
-variable "enable_cluster_autoscaler" {
-  description = "Enable Cluster autoscaler add-on"
-  type        = bool
-  default     = false
-}
-
-variable "cluster_autoscaler_helm_config" {
-  description = "Cluster Autoscaler Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-#-----------External DNS ADDON-------------
 variable "enable_external_dns" {
-  description = "External DNS add-on"
+  description = "Enable external-dns operator add-on"
   type        = bool
   default     = false
 }
 
-variable "external_dns_helm_config" {
-  description = "External DNS Helm Chart config"
+variable "external_dns" {
+  description = "external-dns addon configuration values"
   type        = any
   default     = {}
 }
 
-variable "external_dns_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
+variable "enable_external_dns_gitops" {
+  description = "Enable external-dns using GitOps add-on"
+  type        = bool
+  default     = false
 }
 
 variable "external_dns_route53_zone_arns" {
-  description = "List of Route53 zones ARNs which external-dns will have access to create/manage records"
+  description = "List of Route53 zones ARNs which external-dns will have access to create/manage records (if using Route53)"
   type        = list(string)
   default     = []
 }
 
-#-----------Amazon Managed Service for Prometheus-------------
-variable "enable_amazon_prometheus" {
-  description = "Enable AWS Managed Prometheus service"
+################################################################################
+# Karpenter
+################################################################################
+
+variable "enable_karpenter" {
+  description = "Enable Karpenter controller add-on"
   type        = bool
   default     = false
 }
 
-variable "amazon_prometheus_workspace_endpoint" {
-  description = "AWS Managed Prometheus WorkSpace Endpoint"
-  type        = string
-  default     = null
-}
-
-#-----------PROMETHEUS-------------
-variable "enable_prometheus" {
-  description = "Enable Community Prometheus add-on"
-  type        = bool
-  default     = false
-}
-
-variable "prometheus_helm_config" {
-  description = "Community Prometheus Helm Chart config"
+variable "karpenter" {
+  description = "Karpenter addon configuration values"
   type        = any
   default     = {}
 }
 
-#-----------KUBE-PROMETHEUS-STACK-------------
-variable "enable_kube_prometheus_stack" {
-  description = "Enable Community kube-prometheus-stack add-on"
+variable "enable_karpenter_gitops" {
+  description = "Enable Karpenter using GitOps add-on"
   type        = bool
   default     = false
 }
 
-variable "kube_prometheus_stack_helm_config" {
-  description = "Community kube-prometheus-stack Helm Chart config"
+variable "karpenter_enable_spot_termination" {
+  description = "Determines whether to enable native node termination handling"
+  type        = bool
+  default     = true
+}
+
+variable "karpenter_sqs" {
+  description = "Karpenter SQS queue for native node termination handling configuration values"
   type        = any
   default     = {}
 }
 
-#-----------METRIC SERVER-------------
+variable "karpenter_instance_profile" {
+  description = "Karpenter instance profile configuration values"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Secrets Store CSI Driver
+################################################################################
+
+variable "enable_secrets_store_csi_driver" {
+  description = "Enable CSI Secrets Store Provider"
+  type        = bool
+  default     = false
+}
+
+variable "enable_secrets_store_csi_driver_gitops" {
+  description = "Enable CSI Secrets Store Provider GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "secrets_store_csi_driver" {
+  description = "CSI Secrets Store Provider add-on configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# AWS for Fluentbit
+################################################################################
+variable "enable_aws_for_fluentbit" {
+  description = "Enable AWS for FluentBit add-on"
+  type        = bool
+  default     = false
+}
+
+variable "enable_aws_for_fluentbit_gitops" {
+  description = "Enable AWS for FluentBit add-on"
+  type        = bool
+  default     = false
+}
+
+variable "aws_for_fluentbit" {
+  description = "AWS Fluentbit add-on configurations"
+  type        = any
+  default     = {}
+}
+
+variable "aws_for_fluentbit_cw_log_group" {
+  description = "AWS Fluentbit CloudWatch Log Group configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# AWS Private CA Issuer
+################################################################################
+
+variable "enable_aws_privateca_issuer" {
+  description = "Enable AWS PCA Issuer"
+  type        = bool
+  default     = false
+}
+
+variable "enable_aws_privateca_issuer_gitops" {
+  description = "Enable AWS PCA Issuer GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "aws_privateca_issuer" {
+  description = "AWS PCA Issuer add-on configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Metrics Server
+################################################################################
+
 variable "enable_metrics_server" {
   description = "Enable metrics server add-on"
   type        = bool
   default     = false
 }
 
-variable "metrics_server_helm_config" {
-  description = "Metrics Server Helm Chart config"
+variable "enable_metrics_server_gitops" {
+  description = "Enable metrics GitOps server add-on"
+  type        = bool
+  default     = false
+}
+
+variable "metrics_server" {
+  description = "Metrics Server add-on configurations"
   type        = any
   default     = {}
 }
 
-#-----------AWS EFS CSI DRIVER ADDON-------------
+################################################################################
+# Cluster Proportional Autoscaler
+################################################################################
+
+variable "enable_cluster_proportional_autoscaler" {
+  description = "Enable Cluster Proportional Autoscaler"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cluster_proportional_autoscaler_gitops" {
+  description = "Enable Cluster Proportional Autoscaler GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "cluster_proportional_autoscaler" {
+  description = "Cluster Proportional Autoscaler add-on configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Ingress Nginx
+################################################################################
+
+variable "enable_ingress_nginx" {
+  description = "Enable Ingress Nginx"
+  type        = bool
+  default     = false
+}
+
+variable "enable_ingress_nginx_gitops" {
+  description = "Enable Ingress Nginx GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "ingress_nginx" {
+  description = "Ingress Nginx add-on configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Kube Prometheus Stack
+################################################################################
+
+variable "enable_kube_prometheus_stack" {
+  description = "Enable Kube Prometheus Stack"
+  type        = bool
+  default     = false
+}
+
+variable "enable_kube_prometheus_stack_gitops" {
+  description = "Enable Kube Prometheus Stack GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "kube_prometheus_stack" {
+  description = "Kube Prometheus Stack add-on configurations"
+  type        = any
+  default     = {}
+}
+
+################################################################################
+# Gatekeeper
+################################################################################
+
+variable "enable_gatekeeper" {
+  description = "Enable Gatekeeper add-on"
+  type        = bool
+  default     = false
+}
+
+variable "enable_gatekeeper_gitops" {
+  description = "Enable Gatekeeper GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "gatekeeper" {
+  description = "Gatekeeper add-on configuration"
+  type        = bool
+  default     = false
+}
+
+################################################################################
+# EFS CSI Driver
+################################################################################
 
 variable "enable_efs_csi_driver" {
   description = "Enable AWS EFS CSI Driver add-on"
@@ -314,98 +534,81 @@ variable "efs_csi_driver" {
   default     = {}
 }
 
-#-----------AWS FSX CSI DRIVER ADDON-------------
-variable "enable_aws_fsx_csi_driver" {
-  description = "Enable AWS FSx CSI driver add-on"
+################################################################################
+# FSx CSI Driver
+################################################################################
+
+variable "enable_fsx_csi_driver" {
+  description = "Enable AWS FSX CSI Driver add-on"
   type        = bool
   default     = false
 }
 
-variable "aws_fsx_csi_driver_helm_config" {
-  description = "AWS FSx CSI driver Helm Chart config"
+variable "enable_fsx_csi_driver_gitops" {
+  description = "Enable FSX CSI Driver using GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "fsx_csi_driver" {
+  description = "FSX CSI Driver addon configuration values"
   type        = any
   default     = {}
 }
 
-variable "aws_fsx_csi_driver_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
-}
-
-#-----------AWS LB Ingress Controller-------------
+################################################################################
+# AWS Load Balancer Controller
+################################################################################
 variable "enable_aws_load_balancer_controller" {
   description = "Enable AWS Load Balancer Controller add-on"
   type        = bool
   default     = false
 }
 
-variable "aws_load_balancer_controller_helm_config" {
-  description = "AWS Load Balancer Controller Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-#-----------NGINX-------------
-variable "enable_ingress_nginx" {
-  description = "Enable Ingress Nginx add-on"
+variable "enable_aws_load_balancer_controller_gitops" {
+  description = "AWS Load Balancer Controller using GitOps add-on"
   type        = bool
   default     = false
 }
 
-variable "ingress_nginx_helm_config" {
-  description = "Ingress Nginx Helm Chart config"
+variable "aws_load_balancer_controller" {
+  description = "AWS Loadbalancer Controller addon configuration values"
   type        = any
   default     = {}
 }
 
-#-----------AWS FOR FLUENT BIT-------------
-variable "enable_aws_for_fluentbit" {
-  description = "Enable AWS for FluentBit add-on"
+################################################################################
+# Vertical Pod Autoscaler
+################################################################################
+variable "enable_vpa" {
+  description = "Enable Vertical Pod Autoscaler add-on"
   type        = bool
   default     = false
 }
 
-variable "aws_for_fluentbit_helm_config" {
-  description = "AWS for FluentBit Helm Chart config"
+variable "enable_vpa_gitops" {
+  description = "Vertical Pod Autoscaler using GitOps add-on"
+  type        = bool
+  default     = false
+}
+
+variable "vpa" {
+  description = "Vertical Pod Autoscaler addon configuration values"
   type        = any
   default     = {}
 }
 
-variable "aws_for_fluentbit_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
-}
-
-variable "aws_for_fluentbit_create_cw_log_group" {
-  description = "Set to false to use existing CloudWatch log group supplied via the cw_log_group_name variable."
-  type        = bool
-  default     = true
-}
-
-variable "aws_for_fluentbit_cw_log_group_name" {
-  description = "FluentBit CloudWatch Log group name"
+#-------------------------------------------------------------------------------
+variable "irsa_iam_role_path" {
+  description = "IAM role path for IRSA roles"
   type        = string
-  default     = null
+  default     = "/"
 }
 
-variable "aws_for_fluentbit_cw_log_group_retention" {
-  description = "FluentBit CloudWatch Log group retention period"
-  type        = number
-  default     = 90
-}
-
-variable "aws_for_fluentbit_cw_log_group_skip_destroy" {
-  description = "Set to true if you do not wish the log group (and any logs it may contain) to be deleted at destroy time"
-  type        = bool
-  default     = true
-}
-
-variable "aws_for_fluentbit_cw_log_group_kms_key_arn" {
-  description = "FluentBit CloudWatch Log group KMS Key"
+variable "irsa_iam_permissions_boundary" {
+  description = "IAM permissions boundary for IRSA roles"
   type        = string
-  default     = null
+  default     = ""
 }
 
 #-----------FARGATE FLUENT BIT-------------
@@ -417,191 +620,6 @@ variable "enable_fargate_fluentbit" {
 
 variable "fargate_fluentbit_addon_config" {
   description = "Fargate fluentbit add-on config"
-  type        = any
-  default     = {}
-}
-
-#-----------CERT MANAGER-------------
-variable "enable_cert_manager" {
-  description = "Enable Cert Manager add-on"
-  type        = bool
-  default     = false
-}
-
-variable "cert_manager_helm_config" {
-  description = "Cert Manager Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-variable "cert_manager_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
-}
-
-variable "cert_manager_domain_names" {
-  description = "Domain names of the Route53 hosted zone to use with cert-manager"
-  type        = list(string)
-  default     = []
-}
-
-variable "cert_manager_kubernetes_svc_image_pull_secrets" {
-  description = "list(string) of kubernetes imagePullSecrets"
-  type        = list(string)
-  default     = []
-}
-
-variable "cert_manager_install_letsencrypt_issuers" {
-  description = "Install Let's Encrypt Cluster Issuers"
-  type        = bool
-  default     = true
-}
-
-variable "cert_manager_letsencrypt_email" {
-  description = "Email address for expiration emails from Let's Encrypt"
-  type        = string
-  default     = ""
-}
-
-#-----------AWS NODE TERMINATION HANDLER-------------
-variable "enable_aws_node_termination_handler" {
-  description = "Enable AWS Node Termination Handler add-on"
-  type        = bool
-  default     = false
-}
-
-variable "aws_node_termination_handler_helm_config" {
-  description = "AWS Node Termination Handler Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-variable "aws_node_termination_handler_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
-}
-
-#-----------KARPENTER ADDON-------------
-variable "enable_karpenter" {
-  description = "Enable Karpenter autoscaler add-on"
-  type        = bool
-  default     = false
-}
-
-variable "karpenter_helm_config" {
-  description = "Karpenter autoscaler add-on config"
-  type        = any
-  default     = {}
-}
-
-variable "karpenter_irsa_policies" {
-  description = "Additional IAM policies for a IAM role for service accounts"
-  type        = list(string)
-  default     = []
-}
-
-variable "karpenter_node_iam_instance_profile" {
-  description = "Karpenter Node IAM Instance profile id"
-  type        = string
-  default     = ""
-}
-
-variable "karpenter_enable_spot_termination_handling" {
-  description = "Determines whether to enable native spot termination handling"
-  type        = bool
-  default     = false
-}
-
-variable "karpenter_event_rule_name_prefix" {
-  description = "Prefix used for karpenter event bridge rules"
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = length(var.karpenter_event_rule_name_prefix) <= 14
-    error_message = "Maximum input length exceeded. Please enter no more than 14 characters."
-  }
-}
-
-variable "sqs_queue_managed_sse_enabled" {
-  description = "Enable server-side encryption (SSE) for a SQS queue"
-  type        = bool
-  default     = true
-}
-
-variable "sqs_queue_kms_master_key_id" {
-  description = "The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK"
-  type        = string
-  default     = null
-}
-
-variable "sqs_queue_kms_data_key_reuse_period_seconds" {
-  description = "The length of time, in seconds, for which Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again"
-  type        = number
-  default     = null
-}
-
-#------Vertical Pod Autoscaler(VPA) ADDON--------
-variable "enable_vpa" {
-  description = "Enable Vertical Pod Autoscaler add-on"
-  type        = bool
-  default     = false
-}
-
-variable "vpa_helm_config" {
-  description = "VPA Helm Chart config"
-  type        = any
-  default     = null
-}
-
-#-----------AWS PCA ISSUER-------------
-variable "enable_aws_privateca_issuer" {
-  description = "Enable PCA Issuer"
-  type        = bool
-  default     = false
-}
-
-variable "aws_privateca_issuer_helm_config" {
-  description = "PCA Issuer Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-variable "aws_privateca_acmca_arn" {
-  description = "ARN of AWS ACM PCA"
-  type        = string
-  default     = ""
-}
-
-variable "aws_privateca_issuer_irsa_policies" {
-  description = "IAM policy ARNs for AWS ACM PCA IRSA"
-  type        = list(string)
-  default     = []
-}
-
-#-----------OPENTELEMETRY OPERATOR-------------
-variable "enable_opentelemetry_operator" {
-  description = "Enable opentelemetry operator add-on"
-  type        = bool
-  default     = false
-}
-
-variable "opentelemetry_operator_helm_config" {
-  description = "Opentelemetry Operator Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-variable "enable_amazon_eks_adot" {
-  description = "Enable Amazon EKS ADOT addon"
-  type        = bool
-  default     = false
-}
-
-variable "amazon_eks_adot_config" {
-  description = "Configuration for Amazon EKS ADOT add-on"
   type        = any
   default     = {}
 }
@@ -642,61 +660,4 @@ variable "csi_secrets_store_provider_aws_helm_config" {
   type        = any
   default     = null
   description = "CSI Secrets Store Provider AWS Helm Configurations"
-}
-
-#-----------CSI Secrets Store Provider-------------
-variable "enable_secrets_store_csi_driver" {
-  type        = bool
-  default     = false
-  description = "Enable CSI Secrets Store Provider"
-}
-
-variable "secrets_store_csi_driver_helm_config" {
-  type        = any
-  default     = null
-  description = "CSI Secrets Store Provider Helm Configurations"
-}
-
-#-----------Grafana ADDON-------------
-variable "enable_grafana" {
-  description = "Enable Grafana add-on"
-  type        = bool
-  default     = false
-}
-variable "grafana_helm_config" {
-  description = "Kubernetes Grafana Helm Chart config"
-  type        = any
-  default     = null
-}
-
-variable "grafana_irsa_policies" {
-  description = "IAM policy ARNs for grafana IRSA"
-  type        = list(string)
-  default     = []
-}
-
-#-----------Promtail ADDON-------------
-variable "enable_promtail" {
-  description = "Enable Promtail add-on"
-  type        = bool
-  default     = false
-}
-
-variable "promtail_helm_config" {
-  description = "Promtail Helm Chart config"
-  type        = any
-  default     = {}
-}
-
-#-----------Gatekeeper ADDON-------------
-variable "enable_gatekeeper" {
-  description = "Enable Gatekeeper add-on"
-  type        = bool
-  default     = false
-}
-
-variable "gatekeeper_helm_config" {
-  description = "Gatekeeper Helm Chart config"
-  type        = any
-  default     = {}
 }
