@@ -21,7 +21,7 @@ module "helm_addon" {
     {
       name       = local.name
       chart      = local.name
-      repository = "./kube-prometheus-stack"
+      repository = "${path.module}/kube-prometheus-stack"
       version    = "41.6.0"
       namespace  = kubernetes_namespace_v1.prometheus.metadata[0].name
       values = [templatefile("${path.module}/values.yaml", {
