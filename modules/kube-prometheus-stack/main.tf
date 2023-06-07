@@ -21,8 +21,8 @@ module "helm_addon" {
     {
       name       = local.name
       chart      = local.name
-      repository = "https://prometheus-community.github.io/helm-charts"
-      version    = "45.7.1"
+      repository = "./kube-prometheus-stack"
+      version    = "41.6.0"
       namespace  = kubernetes_namespace_v1.prometheus.metadata[0].name
       values = [templatefile("${path.module}/values.yaml", {
         aws_region = var.addon_context.aws_region_name
